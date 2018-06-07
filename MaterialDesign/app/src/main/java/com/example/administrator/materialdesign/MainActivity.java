@@ -1,6 +1,8 @@
 package com.example.administrator.materialdesign;
 
 
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -14,9 +16,12 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.example.administrator.materialdesign.adapter.PictureAdapter;
@@ -25,8 +30,7 @@ import com.example.administrator.materialdesign.model.Picture;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Toolbar toolbar;
 
@@ -39,6 +43,8 @@ public class MainActivity extends AppCompatActivity
     private PictureAdapter adapter;
 
     private SwipeRefreshLayout swipeRefresh;
+
+    private    PopupWindow mPopupWindow;
 
 
     private Picture[] pictures = {new Picture("大吉大利今晚吃鸡", R.mipmap.aa), new Picture("大吉大利今晚吃鸡", R.mipmap.bb),
@@ -71,7 +77,15 @@ public class MainActivity extends AppCompatActivity
             public boolean onNavigationItemSelected( MenuItem item) {
 
                 mDrawerLayout.closeDrawers();
-
+                switch (item.getItemId()) {
+                     case  R.id.nav_call:
+                         Toast.makeText(MainActivity.this, "加载第一个界面", Toast.LENGTH_SHORT).show();
+                         break;
+                    case R.id.nav_friends:
+                        Toast.makeText(MainActivity.this, "加载第二个界面", Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                }
                 return true;
             }
         });
@@ -94,10 +108,6 @@ public class MainActivity extends AppCompatActivity
                         }).show();
             }
         });
-
-
-
-
         initDatas();
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -145,6 +155,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -160,11 +171,48 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this, "按钮被点击了", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.settings:
-                Toast.makeText(this, "按钮被点击了", Toast.LENGTH_SHORT).show();
+                popUpMyOverflow();
                 break;
 
             default:
         }
         return true;
+    }
+
+
+    public void popUpMyOverflow() {
+        //获取状态栏高度
+        Rect frame = new Rect();
+        getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+        //状态栏高度+toolbar的高度
+        int yOffset = frame.top + toolbar.getHeight();
+        if (null == mPopupWindow) {
+            //初始化PopupWindow的布局
+            View popView = getLayoutInflater().inflate(R.layout.action_overflow_popwindow, null);
+            //popView即popupWindow的布局，ture设置focusAble.
+            mPopupWindow = new PopupWindow(popView,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, true);
+            //必须设置BackgroundDrawable后setOutsideTouchable(true)才会有效
+            mPopupWindow.setBackgroundDrawable(new ColorDrawable());
+            //点击外部关闭。
+            mPopupWindow.setOutsideTouchable(true);
+            //设置一个动画。
+            mPopupWindow.setAnimationStyle(android.R.style.Animation_Dialog);
+            //设置Gravity，让它显示在右上角。
+            mPopupWindow.showAtLocation(toolbar, Gravity.RIGHT | Gravity.TOP, 0, yOffset);
+            //设置item的点击监听
+            popView.findViewById(R.id.ll_item1).setOnClickListener(this);
+            popView.findViewById(R.id.ll_item2).setOnClickListener(this);
+            popView.findViewById(R.id.ll_item3).setOnClickListener(this);
+        } else {
+            mPopupWindow.showAtLocation(toolbar, Gravity.RIGHT | Gravity.TOP, 0, yOffset);
+        }
+
+    }
+
+    @Override
+    public void onClick(View view) {
+
     }
 }
